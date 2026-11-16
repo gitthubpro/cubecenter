@@ -21,9 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cubecenter.app.model.CubeViewModel
-import com.cubecenter.app.model.FaceType
 import com.cubecenter.app.ui.theme.*
-import java.util.Locale
 
 @Composable
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel()) {
