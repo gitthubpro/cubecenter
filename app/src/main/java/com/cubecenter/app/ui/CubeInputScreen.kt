@@ -24,7 +24,7 @@ import com.cubecenter.app.model.CubeViewModel
 import com.cubecenter.app.ui.theme.*
 
 @Composable
-fun CubeInputScreen(viewModel: CubeViewModel = viewModel()) {
+fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
     val state by viewModel.uiState.collectAsState()
 
     Column(
