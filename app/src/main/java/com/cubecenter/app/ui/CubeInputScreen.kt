@@ -59,11 +59,11 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .weight(1f)
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("3D Küp Simülasyonu (Yapım Aşamasında)", color = Color.Gray)
+            Cube3DView(faces = state.faces)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -81,7 +81,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
         
         Box(
             modifier = Modifier
-                .size(240.dp)
+                .size(200.dp)
                 .background(Color.Transparent)
         ) {
             LazyVerticalGrid(
