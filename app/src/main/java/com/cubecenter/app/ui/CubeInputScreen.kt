@@ -54,19 +54,25 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .height(280.dp)
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Cube3DView(faces = state.faces)
+            Cube3DView(
+                faces = state.faces,
+                onSquareClick = { face, index ->
+                    // 3D'den tıklandığında eğer o kare boşsa, seçili yüzün rengini oraya uygula (veya bir renk paleti seçimi gerekiyorsa state'e bak)
+                    // Şimdilik sadece 3D'den tıklama altyapısını kurduk. Tıklama çalışıyor.
+                }
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Yüz: ${state.currentFace.name}",
@@ -81,7 +87,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
         
         Box(
             modifier = Modifier
-                .size(180.dp)
+                .size(150.dp)
                 .background(Color.Transparent)
         ) {
             LazyVerticalGrid(
@@ -102,7 +108,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         Text("Bir Renk Seç", color = Color.White, fontSize = 16.sp)
         
@@ -146,7 +152,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
