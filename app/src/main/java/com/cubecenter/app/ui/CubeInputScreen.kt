@@ -21,12 +21,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cubecenter.app.model.CubeColor
 import com.cubecenter.app.model.CubeViewModel
 import com.cubecenter.app.ui.theme.*
 
 @Composable
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
-    val state by viewModel.uiState.collectAsState()
+    val cubeState by viewModel.cubeState.collectAsState()
+    val selectedFace by viewModel.selectedFace.collectAsState()
 
     Column(
         modifier = Modifier
@@ -46,36 +48,30 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            Button(
-                onClick = { viewModel.undo() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-            ) {
-                Text("Geri Al", color = Color.White)
-            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(280.dp)
+                .weight(1f)
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
             Cube3DView(
-                faces = state.faces,
+                faces = cubeState.faces,
                 onSquareClick = { face, index ->
-                    // 3D'den tıklandığında eğer o kare boşsa, seçili yüzün rengini oraya uygula (veya bir renk paleti seçimi gerekiyorsa state'e bak)
-                    // Şimdilik sadece 3D'den tıklama altyapısını kurduk. Tıklama çalışıyor.
+                    // Tıklanan yüzü seçili yap ve rengi ata
+                    // Şimdilik sadece altyapı, tam etkileşim bir sonraki adımda
                 }
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Yüz: ${state.currentFace.name}",
+            text = "Yüz: ${selectedFace.name}",
             color = Color.White,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium
@@ -83,11 +79,11 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        val faceColors = state.faces[state.currentFace] ?: List(9) { null }
+        val faceColors = cubeState.faces[selectedFace] ?: Array(9) { CubeColor.WHITE }
         
         Box(
             modifier = Modifier
-                .size(150.dp)
+                .size(180.dp)
                 .background(Color.Transparent)
         ) {
             LazyVerticalGrid(
@@ -97,7 +93,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(9) { index ->
-                    val color = faceColors[index] ?: CubeGrey
+                    val color = faceColors[index].toComposeColor()
                     Box(
                         modifier = Modifier
                             .aspectRatio(1f)
@@ -108,14 +104,12 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text("Bir Renk Seç", color = Color.White, fontSize = 16.sp)
         
         Spacer(modifier = Modifier.height(8.dp))
 
-        val palette = listOf(CubeYellow, CubeBlue, CubeOrange, CubeWhite, CubeGreen, CubeRed)
-        
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -123,36 +117,23 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            palette.forEach { color ->
-                val count = state.colorCounts[color] ?: 0
-                val isComplete = count >= 9
-                
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                            .clickable(enabled = !isComplete) {
-                                val nextEmptyIndex = faceColors.indexOfFirst { it == null }
-                                if (nextEmptyIndex != -1) {
-                                    viewModel.setColor(nextEmptyIndex, color)
-                                }
-                            }
-                            .border(if (isComplete) 2.dp else 0.dp, if (isComplete) Color.Black else Color.Transparent, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isComplete) {
-                            Text("✓", color = if (color == CubeWhite) Color.Black else Color.White, fontWeight = FontWeight.Bold)
-                        } else {
-                            Text(count.toString(), color = if (color == CubeWhite) Color.Black else Color.White, fontSize = 12.sp)
+            CubeColor.values().forEach { cubeColor ->
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(cubeColor.toComposeColor())
+                        .clickable {
+                            val nextEmptyIndex = faceColors.indexOfFirst { it == CubeColor.WHITE && cubeState.faces[selectedFace]?.get(it) == null }
+                            // Basit mantık: boş yere veya sıradaki yere rengi ata
+                            // Not: Yeni motorda başlangıçta tüm renkler dolu olduğu için burası değişecek
                         }
-                    }
-                }
+                        .border(1.dp, Color.Black, CircleShape)
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
