@@ -12,14 +12,14 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
-import com.cubecenter.app.model.FaceType
-import com.cubecenter.app.ui.theme.CubeGrey
+import com.cubecenter.app.model.CubeColor
+import com.cubecenter.app.model.Face
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
 data class FaceSquare(
-    val face: FaceType,
+    val face: Face,
     val index: Int,
     val path: Path,
     val color: Color,
@@ -29,8 +29,8 @@ data class FaceSquare(
 
 @Composable
 fun Cube3DView(
-    faces: Map<FaceType, List<Color?>>,
-    onSquareClick: (FaceType, Int) -> Unit,
+    faces: Map<Face, Array<CubeColor>>,
+    onSquareClick: (Face, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var rotationX by remember { mutableStateOf(0.5f) }
@@ -74,8 +74,8 @@ fun Cube3DView(
                         return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
                     }
 
-                    fun addFace(face: FaceType, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
-                        val colors = faces[face] ?: List(9) { null }
+                    fun addFace(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
+                        val colors = faces[face] ?: return
                         val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
                         var index = 0
                         for (i in 0 until 3) {
@@ -148,19 +148,19 @@ fun Cube3DView(
                                 }
                                 
                                 val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
-                                val color = colors.getOrNull(index) ?: CubeGrey
+                                val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
                                 tapSquares.add(FaceSquare(face, index, path, color, zAvg, center))
                                 index++
                             }
                         }
                     }
 
-                    addFace(FaceType.FRONT, 'x', 'y', 'z', 1f)
-                    addFace(FaceType.UP, 'x', 'z', 'y', 1f)
-                    addFace(FaceType.RIGHT, 'y', 'z', 'x', 1f)
-                    addFace(FaceType.BACK, 'x', 'y', 'z', -1f)
-                    addFace(FaceType.DOWN, 'x', 'z', 'y', -1f)
-                    addFace(FaceType.LEFT, 'y', 'z', 'x', -1f)
+                    addFace(Face.F, 'x', 'y', 'z', 1f)
+                    addFace(Face.U, 'x', 'z', 'y', 1f)
+                    addFace(Face.R, 'y', 'z', 'x', 1f)
+                    addFace(Face.B, 'x', 'y', 'z', -1f)
+                    addFace(Face.D, 'x', 'z', 'y', -1f)
+                    addFace(Face.L, 'y', 'z', 'x', -1f)
 
                     tapSquares.sortByDescending { it.z }
                     for (sq in tapSquares) {
@@ -199,8 +199,8 @@ fun Cube3DView(
 
         val squares = mutableListOf<FaceSquare>()
 
-        fun addFace(face: FaceType, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
-            val colors = faces[face] ?: List(9) { null }
+        fun addFace(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
+            val colors = faces[face] ?: return
             val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
             var index = 0
             for (i in 0 until 3) {
@@ -273,19 +273,19 @@ fun Cube3DView(
                     }
                     
                     val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
-                    val color = colors.getOrNull(index) ?: CubeGrey
+                    val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
                     squares.add(FaceSquare(face, index, path, color, zAvg, center))
                     index++
                 }
             }
         }
 
-        addFace(FaceType.FRONT, 'x', 'y', 'z', 1f)
-        addFace(FaceType.UP, 'x', 'z', 'y', 1f)
-        addFace(FaceType.RIGHT, 'y', 'z', 'x', 1f)
-        addFace(FaceType.BACK, 'x', 'y', 'z', -1f)
-        addFace(FaceType.DOWN, 'x', 'z', 'y', -1f)
-        addFace(FaceType.LEFT, 'y', 'z', 'x', -1f)
+        addFace(Face.F, 'x', 'y', 'z', 1f)
+        addFace(Face.U, 'x', 'z', 'y', 1f)
+        addFace(Face.R, 'y', 'z', 'x', 1f)
+        addFace(Face.B, 'x', 'y', 'z', -1f)
+        addFace(Face.D, 'x', 'z', 'y', -1f)
+        addFace(Face.L, 'y', 'z', 'x', -1f)
 
         squares.sortBy { it.z }
 
@@ -306,13 +306,13 @@ fun Cube3DView(
         }
 
         val labelDist = 1.15f
-        val labelData: List<Pair<FaceType, Triple<Float, Float, Float>>> = listOf(
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.FRONT, Triple<Float, Float, Float>(0f, 0f, labelDist)),
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.BACK, Triple<Float, Float, Float>(0f, 0f, -labelDist)),
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.UP, Triple<Float, Float, Float>(0f, labelDist, 0f)),
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.DOWN, Triple<Float, Float, Float>(0f, -labelDist, 0f)),
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.RIGHT, Triple<Float, Float, Float>(labelDist, 0f, 0f)),
-            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.LEFT, Triple<Float, Float, Float>(-labelDist, 0f, 0f))
+        val labelData = listOf(
+            Pair(Face.F, Triple(0f, 0f, labelDist)),
+            Pair(Face.B, Triple(0f, 0f, -labelDist)),
+            Pair(Face.U, Triple(0f, labelDist, 0f)),
+            Pair(Face.D, Triple(0f, -labelDist, 0f)),
+            Pair(Face.R, Triple(labelDist, 0f, 0f)),
+            Pair(Face.L, Triple(-labelDist, 0f, 0f))
         )
 
         for (pair in labelData) {
@@ -323,12 +323,12 @@ fun Cube3DView(
             if (r.third < 0f) {
                 val pt = project(r.first, r.second, r.third)
                 val text: String = when(face) {
-                    FaceType.UP -> "ÜST"
-                    FaceType.DOWN -> "ALT"
-                    FaceType.FRONT -> "ÖN"
-                    FaceType.BACK -> "ARKA"
-                    FaceType.LEFT -> "SOL"
-                    FaceType.RIGHT -> "SAĞ"
+                    Face.U -> "ÜST"
+                    Face.D -> "ALT"
+                    Face.F -> "ÖN"
+                    Face.B -> "ARKA"
+                    Face.L -> "SOL"
+                    Face.R -> "SAĞ"
                 }
                 drawContext.canvas.nativeCanvas.drawText(
                     text,
