@@ -306,16 +306,21 @@ fun Cube3DView(
         }
 
         val labelDist = 1.15f
-        val labels = mapOf(
-            FaceType.FRONT to Triple(0f, 0f, labelDist),
-            FaceType.BACK to Triple(0f, 0f, -labelDist),
-            FaceType.UP to Triple(0f, labelDist, 0f),
-            FaceType.DOWN to Triple(0f, -labelDist, 0f),
-            FaceType.RIGHT to Triple(labelDist, 0f, 0f),
-            FaceType.LEFT to Triple(-labelDist, 0f, 0f)
+        // Tip çıkarım hatasını önlemek için tipi açıkça belirttik
+        val labelData: List<Pair<FaceType, Triple<Float, Float, Float>>> = listOf(
+            Pair(FaceType.FRONT, Triple(0f, 0f, labelDist)),
+            Pair(FaceType.BACK, Triple(0f, 0f, -labelDist)),
+            Pair(FaceType.UP, Triple(0f, labelDist, 0f)),
+            Pair(FaceType.DOWN, Triple(0f, -labelDist, 0f)),
+            Pair(FaceType.RIGHT, Triple(labelDist, 0f, 0f)),
+            Pair(FaceType.LEFT, Triple(-labelDist, 0f, 0f))
         )
 
-        for ((face, coords) in labels) {
+        // Map yerine List<Pair> üzerinden dönüyoruz ki derleyici rahatlasın
+        for (pair in labelData) {
+            val face = pair.first
+            val coords = pair.second
+            
             val r = rotate(coords.first, coords.second, coords.third)
             if (r.third < 0f) {
                 val pt = project(r.first, r.second, r.third)
