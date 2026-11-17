@@ -54,7 +54,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier
@@ -66,7 +66,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             Cube3DView(faces = state.faces)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "Yüz: ${state.currentFace.name}",
@@ -81,7 +81,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
         
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(180.dp)
                 .background(Color.Transparent)
         ) {
             LazyVerticalGrid(
@@ -102,7 +102,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text("Bir Renk Seç", color = Color.White, fontSize = 16.sp)
         
