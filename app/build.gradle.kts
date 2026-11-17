@@ -35,7 +35,6 @@ android {
     }
 }
 
-// Deprecated uyarısını çözmek için modern Kotlin JVM hedefi tanımlaması
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
