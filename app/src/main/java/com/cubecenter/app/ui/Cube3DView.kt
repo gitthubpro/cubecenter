@@ -289,7 +289,6 @@ fun Cube3DView(
 
         squares.sortBy { it.z }
 
-        // Android'in kendi Paint sınıfını kullanarak çakışmayı önlüyoruz
         val textPaint = android.graphics.Paint().apply {
             color = android.graphics.Color.WHITE
             textSize = 36f
@@ -307,19 +306,16 @@ fun Cube3DView(
         }
 
         val labelDist = 1.15f
-        val labelData: List<Pair<FaceType, Triple<Float, Float, Float>>> = listOf(
-            Pair(FaceType.FRONT, Triple(0f, 0f, labelDist)),
-            Pair(FaceType.BACK, Triple(0f, 0f, -labelDist)),
-            Pair(FaceType.UP, Triple(0f, labelDist, 0f)),
-            Pair(FaceType.DOWN, Triple(0f, -labelDist, 0f)),
-            Pair(FaceType.RIGHT, Triple(labelDist, 0f, 0f)),
-            Pair(FaceType.LEFT, Triple(-labelDist, 0f, 0f))
+        val labels = mapOf(
+            FaceType.FRONT to Triple(0f, 0f, labelDist),
+            FaceType.BACK to Triple(0f, 0f, -labelDist),
+            FaceType.UP to Triple(0f, labelDist, 0f),
+            FaceType.DOWN to Triple(0f, -labelDist, 0f),
+            FaceType.RIGHT to Triple(labelDist, 0f, 0f),
+            FaceType.LEFT to Triple(-labelDist, 0f, 0f)
         )
 
-        for (pair in labelData) {
-            val face = pair.first
-            val coords = pair.second
-            
+        for ((face, coords) in labels) {
             val r = rotate(coords.first, coords.second, coords.third)
             if (r.third < 0f) {
                 val pt = project(r.first, r.second, r.third)
