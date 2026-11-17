@@ -48,45 +48,45 @@ fun Cube3DView(
             }
             .pointerInput(faces) {
                 detectTapGestures { offset ->
-                    val tapSquares = mutableListOf<FaceSquare>()
-                    val cubeSize = min(size.width, size.height) * 0.35f
-                    val cx = size.width / 2
-                    val cy = size.height / 2
+                    val tapSquares: MutableList<FaceSquare> = mutableListOf()
+                    val cubeSize: Float = min(size.width, size.height) * 0.35f
+                    val cx: Float = size.width / 2
+                    val cy: Float = size.height / 2
 
                     fun rotate(x: Float, y: Float, z: Float): Triple<Float, Float, Float> {
-                        val cosY = cos(rotationY)
-                        val sinY = sin(rotationY)
-                        val x1 = x * cosY + z * sinY
-                        val z1 = -x * sinY + z * cosY
+                        val cosY: Float = cos(rotationY)
+                        val sinY: Float = sin(rotationY)
+                        val x1: Float = x * cosY + z * sinY
+                        val z1: Float = -x * sinY + z * cosY
 
-                        val cosX = cos(rotationX)
-                        val sinX = sin(rotationX)
-                        val y1 = y * cosX - z1 * sinX
-                        val z2 = y * sinX + z1 * cosX
+                        val cosX: Float = cos(rotationX)
+                        val sinX: Float = sin(rotationX)
+                        val y1: Float = y * cosX - z1 * sinX
+                        val z2: Float = y * sinX + z1 * cosX
 
                         return Triple(x1, y1, z2)
                     }
 
                     fun project(x: Float, y: Float, z: Float): Offset {
-                        val cameraZ = 5f
-                        val pz = z + cameraZ
-                        val factor = 1f / pz
+                        val cameraZ: Float = 5f
+                        val pz: Float = z + cameraZ
+                        val factor: Float = 1f / pz
                         return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
                     }
 
                     fun addFace(face: FaceType, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
-                        val colors = faces[face] ?: List(9) { null }
-                        val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
-                        var index = 0
+                        val colors: List<Color?> = faces[face] ?: List(9) { null }
+                        val steps: List<Float> = listOf(-1f, -1f/3f, 1f/3f, 1f)
+                        var index: Int = 0
                         for (i in 0 until 3) {
                             for (j in 0 until 3) {
-                                val u1 = steps[i]
-                                val u2 = steps[i+1]
-                                val v1 = steps[j]
-                                val v2 = steps[j+1]
+                                val u1: Float = steps[i]
+                                val u2: Float = steps[i+1]
+                                val v1: Float = steps[j]
+                                val v2: Float = steps[j+1]
 
                                 fun getPt(u: Float, v: Float): Triple<Float, Float, Float> {
-                                    var x = 0f; var y = 0f; var z = 0f
+                                    var x: Float = 0f; var y: Float = 0f; var z: Float = 0f
                                     when (axF) {
                                         'x' -> { x = fVal; if (ax1 == 'y') { y = u; z = v } else { y = v; z = u } }
                                         'y' -> { y = fVal; if (ax1 == 'x') { x = u; z = v } else { x = v; z = u } }
@@ -95,51 +95,51 @@ fun Cube3DView(
                                     return Triple(x, y, z)
                                 }
 
-                                val p1 = getPt(u1, v1)
-                                val p2 = getPt(u2, v1)
-                                val p3 = getPt(u2, v2)
-                                val p4 = getPt(u1, v2)
+                                val p1: Triple<Float, Float, Float> = getPt(u1, v1)
+                                val p2: Triple<Float, Float, Float> = getPt(u2, v1)
+                                val p3: Triple<Float, Float, Float> = getPt(u2, v2)
+                                val p4: Triple<Float, Float, Float> = getPt(u1, v2)
 
-                                val r1 = rotate(p1.first, p1.second, p1.third)
-                                val r2 = rotate(p2.first, p2.second, p2.third)
-                                val r3 = rotate(p3.first, p3.second, p3.third)
-                                val r4 = rotate(p4.first, p4.second, p4.third)
+                                val r1: Triple<Float, Float, Float> = rotate(p1.first, p1.second, p1.third)
+                                val r2: Triple<Float, Float, Float> = rotate(p2.first, p2.second, p2.third)
+                                val r3: Triple<Float, Float, Float> = rotate(p3.first, p3.second, p3.third)
+                                val r4: Triple<Float, Float, Float> = rotate(p4.first, p4.second, p4.third)
 
-                                val nx1 = r2.first - r1.first
-                                val ny1 = r2.second - r1.second
-                                val nz1 = r2.third - r1.third
+                                val nx1: Float = r2.first - r1.first
+                                val ny1: Float = r2.second - r1.second
+                                val nz1: Float = r2.third - r1.third
 
-                                val nx2 = r4.first - r1.first
-                                val ny2 = r4.second - r1.second
-                                val nz2 = r4.third - r1.third
+                                val nx2: Float = r4.first - r1.first
+                                val ny2: Float = r4.second - r1.second
+                                val nz2: Float = r4.third - r1.third
 
-                                val normalX = ny1 * nz2 - nz1 * ny2
-                                val normalY = nz1 * nx2 - nx1 * nz2
-                                val normalZ = nx1 * ny2 - ny1 * nx2
+                                val normalX: Float = ny1 * nz2 - nz1 * ny2
+                                val normalY: Float = nz1 * nx2 - nx1 * nz2
+                                val normalZ: Float = nx1 * ny2 - ny1 * nx2
 
-                                val centerX = (r1.first + r2.first + r3.first + r4.first) / 4f
-                                val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
-                                val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
+                                val centerX: Float = (r1.first + r2.first + r3.first + r4.first) / 4f
+                                val centerY: Float = (r1.second + r2.second + r3.second + r4.second) / 4f
+                                val centerZ: Float = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                                val viewX = -centerX
-                                val viewY = -centerY
-                                val viewZ = -5f - centerZ
+                                val viewX: Float = -centerX
+                                val viewY: Float = -centerY
+                                val viewZ: Float = -5f - centerZ
 
-                                val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
+                                val dot: Float = normalX * viewX + normalY * viewY + normalZ * viewZ
 
                                 if (dot < 0f) {
                                     index++
                                     continue
                                 }
 
-                                val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
+                                val zAvg: Float = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                                val o1 = project(r1.first, r1.second, r1.third)
-                                val o2 = project(r2.first, r2.second, r2.third)
-                                val o3 = project(r3.first, r3.second, r3.third)
-                                val o4 = project(r4.first, r4.second, r4.third)
+                                val o1: Offset = project(r1.first, r1.second, r1.third)
+                                val o2: Offset = project(r2.first, r2.second, r2.third)
+                                val o3: Offset = project(r3.first, r3.second, r3.third)
+                                val o4: Offset = project(r4.first, r4.second, r4.third)
 
-                                val path = Path().apply {
+                                val path: Path = Path().apply {
                                     moveTo(o1.x, o1.y)
                                     lineTo(o2.x, o2.y)
                                     lineTo(o3.x, o3.y)
@@ -147,8 +147,8 @@ fun Cube3DView(
                                     close()
                                 }
                                 
-                                val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
-                                val color = colors.getOrNull(index) ?: CubeGrey
+                                val center: Offset = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
+                                val color: Color = colors.getOrNull(index) ?: CubeGrey
                                 tapSquares.add(FaceSquare(face, index, path, color, zAvg, center))
                                 index++
                             }
@@ -163,7 +163,7 @@ fun Cube3DView(
                     addFace(FaceType.LEFT, 'y', 'z', 'x', -1f)
 
                     tapSquares.sortByDescending { it.z }
-                    for (sq in tapSquares) {
+                    for (sq: FaceSquare in tapSquares) {
                         if (sq.path.contains(offset)) {
                             onSquareClick(sq.face, sq.index)
                             break
@@ -172,46 +172,46 @@ fun Cube3DView(
                 }
             }
     ) {
-        val cubeSize = min(size.width, size.height) * 0.35f
-        val cx = size.width / 2
-        val cy = size.height / 2
+        val cubeSize: Float = min(size.width, size.height) * 0.35f
+        val cx: Float = size.width / 2
+        val cy: Float = size.height / 2
 
         fun rotate(x: Float, y: Float, z: Float): Triple<Float, Float, Float> {
-            val cosY = cos(rotationY)
-            val sinY = sin(rotationY)
-            val x1 = x * cosY + z * sinY
-            val z1 = -x * sinY + z * cosY
+            val cosY: Float = cos(rotationY)
+            val sinY: Float = sin(rotationY)
+            val x1: Float = x * cosY + z * sinY
+            val z1: Float = -x * sinY + z * cosY
 
-            val cosX = cos(rotationX)
-            val sinX = sin(rotationX)
-            val y1 = y * cosX - z1 * sinX
-            val z2 = y * sinX + z1 * cosX
+            val cosX: Float = cos(rotationX)
+            val sinX: Float = sin(rotationX)
+            val y1: Float = y * cosX - z1 * sinX
+            val z2: Float = y * sinX + z1 * cosX
 
             return Triple(x1, y1, z2)
         }
 
         fun project(x: Float, y: Float, z: Float): Offset {
-            val cameraZ = 5f
-            val pz = z + cameraZ
-            val factor = 1f / pz
+            val cameraZ: Float = 5f
+            val pz: Float = z + cameraZ
+            val factor: Float = 1f / pz
             return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
         }
 
-        val squares = mutableListOf<FaceSquare>()
+        val squares: MutableList<FaceSquare> = mutableListOf()
 
         fun addFace(face: FaceType, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
-            val colors = faces[face] ?: List(9) { null }
-            val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
-            var index = 0
+            val colors: List<Color?> = faces[face] ?: List(9) { null }
+            val steps: List<Float> = listOf(-1f, -1f/3f, 1f/3f, 1f)
+            var index: Int = 0
             for (i in 0 until 3) {
                 for (j in 0 until 3) {
-                    val u1 = steps[i]
-                    val u2 = steps[i+1]
-                    val v1 = steps[j]
-                    val v2 = steps[j+1]
+                    val u1: Float = steps[i]
+                    val u2: Float = steps[i+1]
+                    val v1: Float = steps[j]
+                    val v2: Float = steps[j+1]
 
                     fun getPt(u: Float, v: Float): Triple<Float, Float, Float> {
-                        var x = 0f; var y = 0f; var z = 0f
+                        var x: Float = 0f; var y: Float = 0f; var z: Float = 0f
                         when (axF) {
                             'x' -> { x = fVal; if (ax1 == 'y') { y = u; z = v } else { y = v; z = u } }
                             'y' -> { y = fVal; if (ax1 == 'x') { x = u; z = v } else { x = v; z = u } }
@@ -220,51 +220,51 @@ fun Cube3DView(
                         return Triple(x, y, z)
                     }
 
-                    val p1 = getPt(u1, v1)
-                    val p2 = getPt(u2, v1)
-                    val p3 = getPt(u2, v2)
-                    val p4 = getPt(u1, v2)
+                    val p1: Triple<Float, Float, Float> = getPt(u1, v1)
+                    val p2: Triple<Float, Float, Float> = getPt(u2, v1)
+                    val p3: Triple<Float, Float, Float> = getPt(u2, v2)
+                    val p4: Triple<Float, Float, Float> = getPt(u1, v2)
 
-                    val r1 = rotate(p1.first, p1.second, p1.third)
-                    val r2 = rotate(p2.first, p2.second, p2.third)
-                    val r3 = rotate(p3.first, p3.second, p3.third)
-                    val r4 = rotate(p4.first, p4.second, p4.third)
+                    val r1: Triple<Float, Float, Float> = rotate(p1.first, p1.second, p1.third)
+                    val r2: Triple<Float, Float, Float> = rotate(p2.first, p2.second, p2.third)
+                    val r3: Triple<Float, Float, Float> = rotate(p3.first, p3.second, p3.third)
+                    val r4: Triple<Float, Float, Float> = rotate(p4.first, p4.second, p4.third)
 
-                    val nx1 = r2.first - r1.first
-                    val ny1 = r2.second - r1.second
-                    val nz1 = r2.third - r1.third
+                    val nx1: Float = r2.first - r1.first
+                    val ny1: Float = r2.second - r1.second
+                    val nz1: Float = r2.third - r1.third
 
-                    val nx2 = r4.first - r1.first
-                    val ny2 = r4.second - r1.second
-                    val nz2 = r4.third - r1.third
+                    val nx2: Float = r4.first - r1.first
+                    val ny2: Float = r4.second - r1.second
+                    val nz2: Float = r4.third - r1.third
 
-                    val normalX = ny1 * nz2 - nz1 * ny2
-                    val normalY = nz1 * nx2 - nx1 * nz2
-                    val normalZ = nx1 * ny2 - ny1 * nx2
+                    val normalX: Float = ny1 * nz2 - nz1 * ny2
+                    val normalY: Float = nz1 * nx2 - nx1 * nz2
+                    val normalZ: Float = nx1 * ny2 - ny1 * nx2
 
-                    val centerX = (r1.first + r2.first + r3.first + r4.first) / 4f
-                    val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
-                    val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
+                    val centerX: Float = (r1.first + r2.first + r3.first + r4.first) / 4f
+                    val centerY: Float = (r1.second + r2.second + r3.second + r4.second) / 4f
+                    val centerZ: Float = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                    val viewX = -centerX
-                    val viewY = -centerY
-                    val viewZ = -5f - centerZ
+                    val viewX: Float = -centerX
+                    val viewY: Float = -centerY
+                    val viewZ: Float = -5f - centerZ
 
-                    val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
+                    val dot: Float = normalX * viewX + normalY * viewY + normalZ * viewZ
 
                     if (dot < 0f) {
                         index++
                         continue
                     }
 
-                    val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
+                    val zAvg: Float = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                    val o1 = project(r1.first, r1.second, r1.third)
-                    val o2 = project(r2.first, r2.second, r2.third)
-                    val o3 = project(r3.first, r3.second, r3.third)
-                    val o4 = project(r4.first, r4.second, r4.third)
+                    val o1: Offset = project(r1.first, r1.second, r1.third)
+                    val o2: Offset = project(r2.first, r2.second, r2.third)
+                    val o3: Offset = project(r3.first, r3.second, r3.third)
+                    val o4: Offset = project(r4.first, r4.second, r4.third)
 
-                    val path = Path().apply {
+                    val path: Path = Path().apply {
                         moveTo(o1.x, o1.y)
                         lineTo(o2.x, o2.y)
                         lineTo(o3.x, o3.y)
@@ -272,8 +272,8 @@ fun Cube3DView(
                         close()
                     }
                     
-                    val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
-                    val color = colors.getOrNull(index) ?: CubeGrey
+                    val center: Offset = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
+                    val color: Color = colors.getOrNull(index) ?: CubeGrey
                     squares.add(FaceSquare(face, index, path, color, zAvg, center))
                     index++
                 }
@@ -289,14 +289,14 @@ fun Cube3DView(
 
         squares.sortBy { it.z }
 
-        val textPaint = android.graphics.Paint().apply {
+        val textPaint: android.graphics.Paint = android.graphics.Paint().apply {
             color = android.graphics.Color.WHITE
             textSize = 36f
             textAlign = android.graphics.Paint.Align.CENTER
             isFakeBoldText = true
         }
 
-        for (sq in squares) {
+        for (sq: FaceSquare in squares) {
             drawPath(sq.path, sq.color)
             drawPath(sq.path, Color.Black, style = Stroke(width = 4f))
 
@@ -305,25 +305,29 @@ fun Cube3DView(
             }
         }
 
-        val labelDist = 1.15f
-        // Tip çıkarım hatasını önlemek için tipi açıkça belirttik
+        val labelDist: Float = 1.15f
+        
+        // TİP ÇIKARIM HATASINI KÖKTEN ÇÖZMEK İÇİN HER ŞEY AÇIKÇA YAZILDI
         val labelData: List<Pair<FaceType, Triple<Float, Float, Float>>> = listOf(
-            Pair(FaceType.FRONT, Triple(0f, 0f, labelDist)),
-            Pair(FaceType.BACK, Triple(0f, 0f, -labelDist)),
-            Pair(FaceType.UP, Triple(0f, labelDist, 0f)),
-            Pair(FaceType.DOWN, Triple(0f, -labelDist, 0f)),
-            Pair(FaceType.RIGHT, Triple(labelDist, 0f, 0f)),
-            Pair(FaceType.LEFT, Triple(-labelDist, 0f, 0f))
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.FRONT, Triple<Float, Float, Float>(0f, 0f, labelDist)),
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.BACK, Triple<Float, Float, Float>(0f, 0f, -labelDist)),
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.UP, Triple<Float, Float, Float>(0f, labelDist, 0f)),
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.DOWN, Triple<Float, Float, Float>(0f, -labelDist, 0f)),
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.RIGHT, Triple<Float, Float, Float>(labelDist, 0f, 0f)),
+            Pair<FaceType, Triple<Float, Float, Float>>(FaceType.LEFT, Triple<Float, Float, Float>(-labelDist, 0f, 0f))
         )
 
-        // Map yerine List<Pair> üzerinden dönüyoruz ki derleyici rahatlasın
-        for (pair in labelData) {
-            val face = pair.first
-            val coords = pair.second
+        for (pair: Pair<FaceType, Triple<Float, Float, Float>> in labelData) {
+            val face: FaceType = pair.first
+            val coords: Triple<Float, Float, Float> = pair.second
             
-            val r = rotate(coords.first, coords.second, coords.third)
+            val cX: Float = coords.first
+            val cY: Float = coords.second
+            val cZ: Float = coords.third
+            
+            val r: Triple<Float, Float, Float> = rotate(cX, cY, cZ)
             if (r.third < 0f) {
-                val pt = project(r.first, r.second, r.third)
+                val pt: Offset = project(r.first, r.second, r.third)
                 val text: String = when(face) {
                     FaceType.UP -> "ÜST"
                     FaceType.DOWN -> "ALT"
