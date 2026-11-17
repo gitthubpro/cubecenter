@@ -49,7 +49,6 @@ fun Cube3DView(
             }
             .pointerInput(faces) {
                 detectTapGestures { offset ->
-                    // Tıklama testi için tüm kareleri yeniden hesapla
                     val tapSquares = mutableListOf<FaceSquare>()
                     val cubeSize = min(size.width, size.height) * 0.35f
                     val cx = size.width / 2
@@ -107,6 +106,19 @@ fun Cube3DView(
                                 val r3 = rotate(p3.first, p3.second, p3.third)
                                 val r4 = rotate(p4.first, p4.second, p4.third)
 
+                                // Yüzün kameraya bakan yüzü olup olmadığını kontrol et (Normal vektör z > 0)
+                                val v1_x = r2.first - r1.first
+                                val v1_y = r2.second - r1.second
+                                val v2_x = r4.first - r1.first
+                                val v2_y = r4.second - r1.second
+                                val crossZ = v1_x * v2_y - v1_y * v2_x
+                                
+                                // Yüz kameraya bakmıyorsa (arka yüz ise) çizme/sayma
+                                if (crossZ <= 0f) {
+                                    index++
+                                    continue
+                                }
+
                                 val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
 
                                 val o1 = project(r1.first, r1.second, r1.third)
@@ -133,8 +145,10 @@ fun Cube3DView(
                     addFace(FaceType.FRONT, 'x', 'y', 'z', 1f)
                     addFace(FaceType.UP, 'x', 'z', 'y', 1f)
                     addFace(FaceType.RIGHT, 'y', 'z', 'x', 1f)
+                    addFace(FaceType.BACK, 'x', 'y', 'z', -1f)
+                    addFace(FaceType.DOWN, 'x', 'z', 'y', -1f)
+                    addFace(FaceType.LEFT, 'y', 'z', 'x', -1f)
 
-                    // En öndeki kareyi bul (z değeri en büyük olan)
                     tapSquares.sortByDescending { it.z }
                     for (sq in tapSquares) {
                         if (sq.path.contains(offset)) {
@@ -203,6 +217,18 @@ fun Cube3DView(
                     val r3 = rotate(p3.first, p3.second, p3.third)
                     val r4 = rotate(p4.first, p4.second, p4.third)
 
+                    // Yüz kameraya bakıyor mu kontrolü
+                    val v1_x = r2.first - r1.first
+                    val v1_y = r2.second - r1.second
+                    val v2_x = r4.first - r1.first
+                    val v2_y = r4.second - r1.second
+                    val crossZ = v1_x * v2_y - v1_y * v2_x
+                    
+                    if (crossZ <= 0f) {
+                        index++
+                        continue
+                    }
+
                     val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
 
                     val o1 = project(r1.first, r1.second, r1.third)
@@ -227,51 +253,57 @@ fun Cube3DView(
         }
 
         addFace(FaceType.FRONT, 'x', 'y', 'z', 1f)
-        addFace(FaceType.BACK, 'x', 'y', 'z', -1f)
         addFace(FaceType.UP, 'x', 'z', 'y', 1f)
-        addFace(FaceType.DOWN, 'x', 'z', 'y', -1f)
         addFace(FaceType.RIGHT, 'y', 'z', 'x', 1f)
+        addFace(FaceType.BACK, 'x', 'y', 'z', -1f)
+        addFace(FaceType.DOWN, 'x', 'z', 'y', -1f)
         addFace(FaceType.LEFT, 'y', 'z', 'x', -1f)
 
-        // Derinliğe göre sırala (en arkadan en öne)
         squares.sortBy { it.z }
 
         val textPaint = Paint().asFrameworkPaint().apply {
-            color = android.graphics.Color.BLACK
-            textSize = 30f
+            color = android.graphics.Color.WHITE
+            textSize = 36f
             textAlign = android.graphics.Paint.Align.CENTER
+            isFakeBoldText = true
         }
 
         for (sq in squares) {
             drawPath(sq.path, sq.color)
-            drawPath(sq.path, Color.Black, style = Stroke(width = 3f))
+            drawPath(sq.path, Color.Black, style = Stroke(width = 4f))
 
-            // Merkez karesine nokta koy
             if (sq.index == 4) {
                 drawCircle(Color.Black, radius = 6f, center = sq.center)
             }
         }
 
-        // Yüz etiketlerini çiz (sadece öndeki yüzler için)
-        val faceCenters = mapOf(
-            FaceType.FRONT to rotate(0f, 0f, 1.05f),
-            FaceType.UP to rotate(0f, 1.05f, 0f),
-            FaceType.RIGHT to rotate(1.05f, 0f, 0f)
+        // Yüz etiketlerini sadece kameraya bakan yüzler için çiz
+        val labelDist = 1.15f
+        val labels = mapOf(
+            FaceType.FRONT to Triple(0f, 0f, labelDist),
+            FaceType.BACK to Triple(0f, 0f, -labelDist),
+            FaceType.UP to Triple(0f, labelDist, 0f),
+            FaceType.DOWN to Triple(0f, -labelDist, 0f),
+            FaceType.RIGHT to Triple(labelDist, 0f, 0f),
+            FaceType.LEFT to Triple(-labelDist, 0f, 0f)
         )
 
-        faceCenters.forEach { (face, coords) ->
-            if (coords.third > 0) { // Sadece kameraya bakan yüzler
-                val pt = project(coords.first, coords.second, coords.third)
+        labels.forEach { (face, coords) ->
+            val r = rotate(coords.first, coords.second, coords.third)
+            if (r.third > 0) { // Kamera arkada değilse
+                val pt = project(r.first, r.second, r.third)
                 val text = when(face) {
-                    FaceType.UP -> "UP"
-                    FaceType.FRONT -> "FRONT"
-                    FaceType.RIGHT -> "RIGHT"
-                    else -> ""
+                    FaceType.UP -> "ÜST"
+                    FaceType.DOWN -> "ALT"
+                    FaceType.FRONT -> "ÖN"
+                    FaceType.BACK -> "ARKA"
+                    FaceType.LEFT -> "SOL"
+                    FaceType.RIGHT -> "SAĞ"
                 }
                 drawContext.canvas.nativeCanvas.drawText(
                     text,
                     pt.x,
-                    pt.y + 10f,
+                    pt.y + 12f,
                     textPaint
                 )
             }
