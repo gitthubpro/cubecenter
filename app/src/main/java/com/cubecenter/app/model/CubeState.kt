@@ -32,8 +32,12 @@ class CubeViewModel : ViewModel() {
     val uiState: StateFlow<CubeUiState> = _uiState.asStateFlow()
 
     fun setColor(index: Int, color: Color) {
+        setColorForFace(_uiState.value.currentFace, index, color)
+    }
+
+    fun setColorForFace(face: FaceType, index: Int, color: Color) {
         val currentState = _uiState.value
-        val currentFaceColors = currentState.faces[currentState.currentFace]?.toMutableList() ?: return
+        val currentFaceColors = currentState.faces[face]?.toMutableList() ?: return
         
         if (currentFaceColors[index] != null) return
         if ((currentState.colorCounts[color] ?: 0) >= 9) return
@@ -44,9 +48,9 @@ class CubeViewModel : ViewModel() {
         newCounts[color] = (newCounts[color] ?: 0) + 1
 
         val newFaces = currentState.faces.toMutableMap()
-        newFaces[currentState.currentFace] = currentFaceColors
+        newFaces[face] = currentFaceColors
 
-        val newHistory = currentState.history + currentState.currentFace
+        val newHistory = currentState.history + face
 
         _uiState.value = currentState.copy(
             faces = newFaces,
