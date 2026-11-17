@@ -106,7 +106,6 @@ fun Cube3DView(
                                 val r3 = rotate(p3.first, p3.second, p3.third)
                                 val r4 = rotate(p4.first, p4.second, p4.third)
 
-                                // Kameraya bakan yüzü kontrol et (Normal vektör hesaplaması)
                                 val nx1 = r2.first - r1.first
                                 val ny1 = r2.second - r1.second
                                 val nz1 = r2.third - r1.third
@@ -123,13 +122,13 @@ fun Cube3DView(
                                 val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
                                 val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                                val viewX = centerX
-                                val viewY = centerY
-                                val viewZ = centerZ - (-5f) // Kamera Z = -5
+                                val viewX = -centerX
+                                val viewY = -centerY
+                                val viewZ = -5f - centerZ
 
                                 val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
 
-                                if (dot > 0f) {
+                                if (dot < 0f) {
                                     index++
                                     continue
                                 }
@@ -232,7 +231,6 @@ fun Cube3DView(
                     val r3 = rotate(p3.first, p3.second, p3.third)
                     val r4 = rotate(p4.first, p4.second, p4.third)
 
-                    // Kameraya bakan yüzü kontrol et
                     val nx1 = r2.first - r1.first
                     val ny1 = r2.second - r1.second
                     val nz1 = r2.third - r1.third
@@ -249,13 +247,13 @@ fun Cube3DView(
                     val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
                     val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
 
-                    val viewX = centerX
-                    val viewY = centerY
-                    val viewZ = centerZ - (-5f)
+                    val viewX = -centerX
+                    val viewY = -centerY
+                    val viewZ = -5f - centerZ
 
                     val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
 
-                    if (dot > 0f) {
+                    if (dot < 0f) {
                         index++
                         continue
                     }
@@ -308,26 +306,24 @@ fun Cube3DView(
             }
         }
 
-        // Yüz etiketlerini sadece kameraya bakan yüzler için çiz
         val labelDist = 1.15f
-        val labels: Map<FaceType, Triple<Float, Float, Float>> = mapOf(
-            FaceType.FRONT to Triple(0f, 0f, labelDist),
-            FaceType.BACK to Triple(0f, 0f, -labelDist),
-            FaceType.UP to Triple(0f, labelDist, 0f),
-            FaceType.DOWN to Triple(0f, -labelDist, 0f),
-            FaceType.RIGHT to Triple(labelDist, 0f, 0f),
-            FaceType.LEFT to Triple(-labelDist, 0f, 0f)
+        val labelData: List<Pair<FaceType, Triple<Float, Float, Float>>> = listOf(
+            Pair(FaceType.FRONT, Triple(0f, 0f, labelDist)),
+            Pair(FaceType.BACK, Triple(0f, 0f, -labelDist)),
+            Pair(FaceType.UP, Triple(0f, labelDist, 0f)),
+            Pair(FaceType.DOWN, Triple(0f, -labelDist, 0f)),
+            Pair(FaceType.RIGHT, Triple(labelDist, 0f, 0f)),
+            Pair(FaceType.LEFT, Triple(-labelDist, 0f, 0f))
         )
 
-        // Tip çıkarım hatasını önlemek için entries üzerinden dönüyoruz
-        labels.entries.forEach { entry ->
-            val face = entry.key
-            val coords = entry.value
+        for (pair in labelData) {
+            val face = pair.first
+            val coords = pair.second
             
             val r = rotate(coords.first, coords.second, coords.third)
-            if (r.third > 0) { // Kamera arkada değilse
+            if (r.third < 0f) {
                 val pt = project(r.first, r.second, r.third)
-                val text = when(face) {
+                val text: String = when(face) {
                     FaceType.UP -> "ÜST"
                     FaceType.DOWN -> "ALT"
                     FaceType.FRONT -> "ÖN"
