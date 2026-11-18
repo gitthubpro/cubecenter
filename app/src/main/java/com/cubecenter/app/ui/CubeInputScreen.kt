@@ -10,9 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +27,8 @@ import com.cubecenter.app.ui.theme.*
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
     val cubeState by viewModel.cubeState.collectAsState()
     val selectedFace by viewModel.selectedFace.collectAsState()
+    
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -62,8 +62,8 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             Cube3DView(
                 faces = cubeState.faces,
                 onSquareClick = { face, index ->
-                    // Tıklanan yüzü seçili yap ve rengi ata
-                    // Şimdilik sadece altyapı, tam etkileşim bir sonraki adımda
+                    viewModel.setFace(face)
+                    selectedIndex = index
                 }
             )
         }
@@ -98,7 +98,12 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                         modifier = Modifier
                             .aspectRatio(1f)
                             .background(color, RoundedCornerShape(8.dp))
-                            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                            .border(
+                                width = if (selectedIndex == index) 3.dp else 1.dp, 
+                                color = if (selectedIndex == index) Color.Yellow else Color.Black, 
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { selectedIndex = index }
                     )
                 }
             }
@@ -124,9 +129,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                         .clip(CircleShape)
                         .background(cubeColor.toComposeColor())
                         .clickable {
-                            val nextEmptyIndex = faceColors.indexOfFirst { it == CubeColor.WHITE && cubeState.faces[selectedFace]?.get(it) == null }
-                            // Basit mantık: boş yere veya sıradaki yere rengi ata
-                            // Not: Yeni motorda başlangıçta tüm renkler dolu olduğu için burası değişecek
+                            viewModel.setColor(selectedIndex, cubeColor)
                         }
                         .border(1.dp, Color.Black, CircleShape)
                 )
