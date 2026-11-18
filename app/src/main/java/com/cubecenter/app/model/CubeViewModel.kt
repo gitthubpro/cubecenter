@@ -25,6 +25,10 @@ class CubeViewModel : ViewModel() {
         _cubeState.value = RubikCube(newFaces)
     }
 
+    fun setFace(face: Face) {
+        _selectedFace.value = face
+    }
+
     fun changeFace(direction: Int) {
         val faces = Face.values()
         val currentIndex = faces.indexOf(_selectedFace.value)
