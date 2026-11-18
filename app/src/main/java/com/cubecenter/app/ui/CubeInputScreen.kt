@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -27,8 +24,6 @@ import com.cubecenter.app.ui.theme.*
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
     val cubeState by viewModel.cubeState.collectAsState()
     val selectedFace by viewModel.selectedFace.collectAsState()
-    
-    var selectedIndex by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -37,18 +32,12 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Cubecenter - Giriş",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = "Cubecenter - Giriş",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -59,13 +48,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Cube3DView(
-                faces = cubeState.faces,
-                onSquareClick = { face, index ->
-                    viewModel.setFace(face)
-                    selectedIndex = index
-                }
-            )
+            Cube3DView(faces = cubeState.faces)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -81,30 +64,27 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
 
         val faceColors = cubeState.faces[selectedFace] ?: Array(9) { CubeColor.WHITE }
         
-        Box(
-            modifier = Modifier
-                .size(180.dp)
-                .background(Color.Transparent)
+        // LazyVerticalGrid YERİNE BASİT COLUMN/ROW KULLANIMI (Derleyici dostu)
+        Column(
+            modifier = Modifier.size(150.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(9) { index ->
-                    val color = faceColors[index].toComposeColor()
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .background(color, RoundedCornerShape(8.dp))
-                            .border(
-                                width = if (selectedIndex == index) 3.dp else 1.dp, 
-                                color = if (selectedIndex == index) Color.Yellow else Color.Black, 
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable { selectedIndex = index }
-                    )
+            for (row in 0 until 3) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    for (col in 0 until 3) {
+                        val index = row * 3 + col
+                        val color = faceColors[index].toComposeColor()
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .background(color, RoundedCornerShape(8.dp))
+                                .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                        )
+                    }
                 }
             }
         }
@@ -128,9 +108,6 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(cubeColor.toComposeColor())
-                        .clickable {
-                            viewModel.setColor(selectedIndex, cubeColor)
-                        }
                         .border(1.dp, Color.Black, CircleShape)
                 )
             }
