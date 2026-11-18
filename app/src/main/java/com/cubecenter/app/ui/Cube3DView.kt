@@ -1,146 +1,143 @@
 package com.cubecenter.app.ui
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cubecenter.app.model.CubeColor
-import com.cubecenter.app.model.Face
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
-
-data class FaceSquare(
-    val face: Face,
-    val path: Path,
-    val color: Color,
-    val z: Float
-)
+import com.cubecenter.app.model.CubeViewModel
+import com.cubecenter.app.ui.theme.*
 
 @Composable
-fun Cube3DView(
-    faces: Map<Face, Array<CubeColor>>,
-    modifier: Modifier = Modifier
-) {
-    var rotationX by remember { mutableStateOf(0.5f) }
-    var rotationY by remember { mutableStateOf(-0.785f) }
+fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
+    val cubeState by viewModel.cubeState.collectAsState()
+    val selectedFace by viewModel.selectedFace.collectAsState()
+    
+    var selectedIndex by remember { mutableStateOf(0) }
 
-    Canvas(
-        modifier = modifier
+    Column(
+        modifier = Modifier
             .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    rotationY -= dragAmount.x * 0.01f
-                    rotationX += dragAmount.y * 0.01f
-                }
-            }
+            .background(DarkBackground)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val cubeSize = min(size.width, size.height) * 0.35f
-        val cx = size.width / 2
-        val cy = size.height / 2
+        Text(
+            text = "Cubecenter - Giriş",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
 
-        fun rotate(x: Float, y: Float, z: Float): Triple<Float, Float, Float> {
-            val cosY = cos(rotationY)
-            val sinY = sin(rotationY)
-            val x1 = x * cosY + z * sinY
-            val z1 = -x * sinY + z * cosY
+        Spacer(modifier = Modifier.height(16.dp))
 
-            val cosX = cos(rotationX)
-            val sinX = sin(rotationX)
-            val y1 = y * cosX - z1 * sinX
-            val z2 = y * sinX + z1 * cosX
-
-            return Triple(x1, y1, z2)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .background(DarkSurface, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Cube3DView(
+                faces = cubeState.faces,
+                onSquareClick = { face, index ->
+                    viewModel.setFace(face)
+                    selectedIndex = index
+                }
+            )
         }
 
-        fun project(x: Float, y: Float, z: Float): Offset {
-            val cameraDistance = 5f
-            val pz = z + cameraDistance
-            val factor = 1f / pz
-            return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        val squares = mutableListOf<FaceSquare>()
+        Text(
+            text = "Yüz: ${selectedFace.name}",
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium
+        )
 
-        fun addFace(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
-            val colors = faces[face] ?: return
-            val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
-            var index = 0
-            for (i in 0 until 3) {
-                for (j in 0 until 3) {
-                    val u1 = steps[i]
-                    val u2 = steps[i+1]
-                    val v1 = steps[j]
-                    val v2 = steps[j+1]
+        Spacer(modifier = Modifier.height(8.dp))
 
-                    fun getPt(u: Float, v: Float): Triple<Float, Float, Float> {
-                        var x = 0f; var y = 0f; var z = 0f
-                        when (axF) {
-                            'x' -> { x = fVal; if (ax1 == 'y') { y = u; z = v } else { y = v; z = u } }
-                            'y' -> { y = fVal; if (ax1 == 'x') { x = u; z = v } else { x = v; z = u } }
-                            'z' -> { z = fVal; if (ax1 == 'x') { x = u; y = v } else { x = v; y = u } }
-                        }
-                        return Triple(x, y, z)
+        val faceColors = cubeState.faces[selectedFace] ?: Array(9) { CubeColor.WHITE }
+        
+        Column(
+            modifier = Modifier.size(150.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            for (row in 0 until 3) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    for (col in 0 until 3) {
+                        val index = row * 3 + col
+                        val color = faceColors[index].toComposeColor()
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .background(color, RoundedCornerShape(8.dp))
+                                .border(
+                                    width = if (selectedIndex == index) 3.dp else 1.dp,
+                                    color = if (selectedIndex == index) Color.Yellow else Color.Black,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable { selectedIndex = index }
+                        )
                     }
-
-                    val p1 = getPt(u1, v1)
-                    val p2 = getPt(u2, v1)
-                    val p3 = getPt(u2, v2)
-                    val p4 = getPt(u1, v2)
-
-                    val r1 = rotate(p1.first, p1.second, p1.third)
-                    val r2 = rotate(p2.first, p2.second, p2.third)
-                    val r3 = rotate(p3.first, p3.second, p3.third)
-                    val r4 = rotate(p4.first, p4.second, p4.third)
-
-                    // Derinlik (Z) hesaplaması ve arkaya bakan yüzlerin filtrelenmesi
-                    val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
-                    if (zAvg > 1.5f) {
-                        index++
-                        continue
-                    }
-
-                    val o1 = project(r1.first, r1.second, r1.third)
-                    val o2 = project(r2.first, r2.second, r2.third)
-                    val o3 = project(r3.first, r3.second, r3.third)
-                    val o4 = project(r4.first, r4.second, r4.third)
-
-                    val path = Path().apply {
-                        moveTo(o1.x, o1.y)
-                        lineTo(o2.x, o2.y)
-                        lineTo(o3.x, o3.y)
-                        lineTo(o4.x, o4.y)
-                        close()
-                    }
-                    
-                    val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                    squares.add(FaceSquare(face, path, color, zAvg))
-                    index++
                 }
             }
         }
 
-        addFace(Face.F, 'x', 'y', 'z', 1f)
-        addFace(Face.U, 'x', 'z', 'y', 1f)
-        addFace(Face.R, 'y', 'z', 'x', 1f)
-        addFace(Face.B, 'x', 'y', 'z', -1f)
-        addFace(Face.D, 'x', 'z', 'y', -1f)
-        addFace(Face.L, 'y', 'z', 'x', -1f)
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // En arkadan en öne doğru sırala
-        squares.sortByDescending { it.z }
+        Text("Bir Renk Seç", color = Color.White, fontSize = 16.sp)
+        
+        Spacer(modifier = Modifier.height(8.dp))
 
-        for (sq in squares) {
-            drawPath(sq.path, sq.color)
-            drawPath(sq.path, Color.Black, style = Stroke(width = 4f))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(DarkSurface, RoundedCornerShape(16.dp))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            CubeColor.values().forEach { cubeColor ->
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(cubeColor.toComposeColor())
+                        .clickable { viewModel.setColor(selectedIndex, cubeColor) }
+                        .border(1.dp, Color.Black, CircleShape)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = { viewModel.changeFace(-1) }) {
+                Text("< Önceki")
+            }
+            Button(onClick = { viewModel.changeFace(1) }) {
+                Text("Sonraki >")
+            }
         }
     }
 }
