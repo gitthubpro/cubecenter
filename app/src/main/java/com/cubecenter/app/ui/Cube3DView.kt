@@ -105,35 +105,6 @@ fun Cube3DView(
                                 val r3 = rotate(p3.first, p3.second, p3.third)
                                 val r4 = rotate(p4.first, p4.second, p4.third)
 
-                                val nx1 = r2.first - r1.first
-                                val ny1 = r2.second - r1.second
-                                val nz1 = r2.third - r1.third
-
-                                val nx2 = r4.first - r1.first
-                                val ny2 = r4.second - r1.second
-                                val nz2 = r4.third - r1.third
-
-                                val normalX = ny1 * nz2 - nz1 * ny2
-                                val normalY = nz1 * nx2 - nx1 * nz2
-                                val normalZ = nx1 * ny2 - ny1 * nx2
-
-                                val centerX = (r1.first + r2.first + r3.first + r4.first) / 4f
-                                val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
-                                val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
-
-                                val viewX = -centerX
-                                val viewY = -centerY
-                                val viewZ = -5f - centerZ
-
-                                val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
-
-                                if (dot < 0f) {
-                                    index++
-                                    continue
-                                }
-
-                                val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
-
                                 val o1 = project(r1.first, r1.second, r1.third)
                                 val o2 = project(r2.first, r2.second, r2.third)
                                 val o3 = project(r3.first, r3.second, r3.third)
@@ -149,7 +120,8 @@ fun Cube3DView(
                                 
                                 val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
                                 val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                                tapSquares.add(FaceSquare(face, index, path, color, zAvg, center))
+                                val zAvgTap = (r1.third + r2.third + r3.third + r4.third) / 4f
+                                tapSquares.add(FaceSquare(face, index, path, color, zAvgTap, center))
                                 index++
                             }
                         }
