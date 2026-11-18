@@ -24,6 +24,8 @@ import com.cubecenter.app.ui.theme.*
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
     val cubeState by viewModel.cubeState.collectAsState()
     val selectedFace by viewModel.selectedFace.collectAsState()
+    
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -48,7 +50,14 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Cube3DView(faces = cubeState.faces)
+            // İŞTE EKSİK OLAN PARAMETRE BURADA EKLENDİ
+            Cube3DView(
+                faces = cubeState.faces,
+                onSquareClick = { face, index ->
+                    viewModel.setFace(face)
+                    selectedIndex = index
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -64,7 +73,6 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
 
         val faceColors = cubeState.faces[selectedFace] ?: Array(9) { CubeColor.WHITE }
         
-        // LazyVerticalGrid YERİNE BASİT COLUMN/ROW KULLANIMI (Derleyici dostu)
         Column(
             modifier = Modifier.size(150.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -82,7 +90,12 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .background(color, RoundedCornerShape(8.dp))
-                                .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                                .border(
+                                    width = if (selectedIndex == index) 3.dp else 1.dp,
+                                    color = if (selectedIndex == index) Color.Yellow else Color.Black,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable { selectedIndex = index }
                         )
                     }
                 }
@@ -108,6 +121,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(cubeColor.toComposeColor())
+                        .clickable { viewModel.setColor(selectedIndex, cubeColor) }
                         .border(1.dp, Color.Black, CircleShape)
                 )
             }
