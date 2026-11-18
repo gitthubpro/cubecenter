@@ -74,7 +74,7 @@ fun Cube3DView(
                         return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
                     }
 
-                    fun addFace(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
+                    fun addFaceForTap(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
                         val colors = faces[face] ?: return
                         val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
                         var index = 0
@@ -105,6 +105,35 @@ fun Cube3DView(
                                 val r3 = rotate(p3.first, p3.second, p3.third)
                                 val r4 = rotate(p4.first, p4.second, p4.third)
 
+                                val nx1 = r2.first - r1.first
+                                val ny1 = r2.second - r1.second
+                                val nz1 = r2.third - r1.third
+
+                                val nx2 = r4.first - r1.first
+                                val ny2 = r4.second - r1.second
+                                val nz2 = r4.third - r1.third
+
+                                val normalX = ny1 * nz2 - nz1 * ny2
+                                val normalY = nz1 * nx2 - nx1 * nz2
+                                val normalZ = nx1 * ny2 - ny1 * nx2
+
+                                val centerX = (r1.first + r2.first + r3.first + r4.first) / 4f
+                                val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
+                                val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
+
+                                val viewX = -centerX
+                                val viewY = -centerY
+                                val viewZ = -5f - centerZ
+
+                                val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
+
+                                if (dot < 0f) {
+                                    index++
+                                    continue
+                                }
+
+                                val zAvgTap = (r1.third + r2.third + r3.third + r4.third) / 4f
+
                                 val o1 = project(r1.first, r1.second, r1.third)
                                 val o2 = project(r2.first, r2.second, r2.third)
                                 val o3 = project(r3.first, r3.second, r3.third)
@@ -120,19 +149,20 @@ fun Cube3DView(
                                 
                                 val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
                                 val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                                val zAvgTap = (r1.third + r2.third + r3.third + r4.third) / 4f
+                                
+                                // Senin bulduğun zAvgTap düzeltmesi burada!
                                 tapSquares.add(FaceSquare(face, index, path, color, zAvgTap, center))
                                 index++
                             }
                         }
                     }
 
-                    addFace(Face.F, 'x', 'y', 'z', 1f)
-                    addFace(Face.U, 'x', 'z', 'y', 1f)
-                    addFace(Face.R, 'y', 'z', 'x', 1f)
-                    addFace(Face.B, 'x', 'y', 'z', -1f)
-                    addFace(Face.D, 'x', 'z', 'y', -1f)
-                    addFace(Face.L, 'y', 'z', 'x', -1f)
+                    addFaceForTap(Face.F, 'x', 'y', 'z', 1f)
+                    addFaceForTap(Face.U, 'x', 'z', 'y', 1f)
+                    addFaceForTap(Face.R, 'y', 'z', 'x', 1f)
+                    addFaceForTap(Face.B, 'x', 'y', 'z', -1f)
+                    addFaceForTap(Face.D, 'x', 'z', 'y', -1f)
+                    addFaceForTap(Face.L, 'y', 'z', 'x', -1f)
 
                     tapSquares.sortByDescending { it.z }
                     for (sq in tapSquares) {
@@ -171,7 +201,7 @@ fun Cube3DView(
 
         val squares = mutableListOf<FaceSquare>()
 
-        fun addFace(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
+        fun addFaceForDraw(face: Face, ax1: Char, ax2: Char, axF: Char, fVal: Float) {
             val colors = faces[face] ?: return
             val steps = listOf(-1f, -1f/3f, 1f/3f, 1f)
             var index = 0
@@ -229,7 +259,7 @@ fun Cube3DView(
                         continue
                     }
 
-                    val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
+                    val zAvgDraw = (r1.third + r2.third + r3.third + r4.third) / 4f
 
                     val o1 = project(r1.first, r1.second, r1.third)
                     val o2 = project(r2.first, r2.second, r2.third)
@@ -246,18 +276,18 @@ fun Cube3DView(
                     
                     val center = Offset((o1.x+o2.x+o3.x+o4.x)/4f, (o1.y+o2.y+o3.y+o4.y)/4f)
                     val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                    squares.add(FaceSquare(face, index, path, color, zAvg, center))
+                    squares.add(FaceSquare(face, index, path, color, zAvgDraw, center))
                     index++
                 }
             }
         }
 
-        addFace(Face.F, 'x', 'y', 'z', 1f)
-        addFace(Face.U, 'x', 'z', 'y', 1f)
-        addFace(Face.R, 'y', 'z', 'x', 1f)
-        addFace(Face.B, 'x', 'y', 'z', -1f)
-        addFace(Face.D, 'x', 'z', 'y', -1f)
-        addFace(Face.L, 'y', 'z', 'x', -1f)
+        addFaceForDraw(Face.F, 'x', 'y', 'z', 1f)
+        addFaceForDraw(Face.U, 'x', 'z', 'y', 1f)
+        addFaceForDraw(Face.R, 'y', 'z', 'x', 1f)
+        addFaceForDraw(Face.B, 'x', 'y', 'z', -1f)
+        addFaceForDraw(Face.D, 'x', 'z', 'y', -1f)
+        addFaceForDraw(Face.L, 'y', 'z', 'x', -1f)
 
         squares.sortBy { it.z }
 
