@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import com.cubecenter.app.model.CubeColor
 import com.cubecenter.app.model.Face
@@ -18,7 +19,6 @@ import kotlin.math.sin
 
 data class FaceSquare(
     val face: Face,
-    val index: Int,
     val path: Path,
     val color: Color,
     val z: Float
@@ -62,8 +62,8 @@ fun Cube3DView(
         }
 
         fun project(x: Float, y: Float, z: Float): Offset {
-            val cameraZ = 5f
-            val pz = z + cameraZ
+            val cameraDistance = 5f
+            val pz = z + cameraDistance
             val factor = 1f / pz
             return Offset(cx + x * factor * cubeSize, cy - y * factor * cubeSize)
         }
@@ -101,34 +101,12 @@ fun Cube3DView(
                     val r3 = rotate(p3.first, p3.second, p3.third)
                     val r4 = rotate(p4.first, p4.second, p4.third)
 
-                    val nx1 = r2.first - r1.first
-                    val ny1 = r2.second - r1.second
-                    val nz1 = r2.third - r1.third
-
-                    val nx2 = r4.first - r1.first
-                    val ny2 = r4.second - r1.second
-                    val nz2 = r4.third - r1.third
-
-                    val normalX = ny1 * nz2 - nz1 * ny2
-                    val normalY = nz1 * nx2 - nx1 * nz2
-                    val normalZ = nx1 * ny2 - ny1 * nx2
-
-                    val centerX = (r1.first + r2.first + r3.first + r4.first) / 4f
-                    val centerY = (r1.second + r2.second + r3.second + r4.second) / 4f
-                    val centerZ = (r1.third + r2.third + r3.third + r4.third) / 4f
-
-                    val viewX = -centerX
-                    val viewY = -centerY
-                    val viewZ = -5f - centerZ
-
-                    val dot = normalX * viewX + normalY * viewY + normalZ * viewZ
-
-                    if (dot < 0f) {
+                    // Derinlik (Z) hesaplaması ve arkaya bakan yüzlerin filtrelenmesi
+                    val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
+                    if (zAvg > 1.5f) {
                         index++
                         continue
                     }
-
-                    val zAvg = (r1.third + r2.third + r3.third + r4.third) / 4f
 
                     val o1 = project(r1.first, r1.second, r1.third)
                     val o2 = project(r2.first, r2.second, r2.third)
@@ -144,7 +122,7 @@ fun Cube3DView(
                     }
                     
                     val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                    squares.add(FaceSquare(face, index, path, color, zAvg))
+                    squares.add(FaceSquare(face, path, color, zAvg))
                     index++
                 }
             }
@@ -157,7 +135,8 @@ fun Cube3DView(
         addFace(Face.D, 'x', 'z', 'y', -1f)
         addFace(Face.L, 'y', 'z', 'x', -1f)
 
-        squares.sortBy { it.z }
+        // En arkadan en öne doğru sırala
+        squares.sortByDescending { it.z }
 
         for (sq in squares) {
             drawPath(sq.path, sq.color)
