@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -17,13 +18,13 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-// Güncelleme v2: GitHub'ın farkı görmesi için eklendi
 data class FaceSquare(
     val face: Face,
     val index: Int,
     val path: Path,
     val color: Color,
-    val z: Float
+    val z: Float,
+    val bounds: Rect
 )
 
 @Composable
@@ -121,8 +122,15 @@ fun Cube3DView(
                                     lineTo(o4.x, o4.y)
                                     close()
                                 }
+
+                                val minX = minOf(o1.x, o2.x, o3.x, o4.x)
+                                val maxX = maxOf(o1.x, o2.x, o3.x, o4.x)
+                                val minY = minOf(o1.y, o2.y, o3.y, o4.y)
+                                val maxY = maxOf(o1.y, o2.y, o3.y, o4.y)
+                                val bounds = Rect(minX, minY, maxX, maxY)
+
                                 val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                                tapSquares.add(FaceSquare(face, index, path, color, zAvgTap))
+                                tapSquares.add(FaceSquare(face, index, path, color, zAvgTap, bounds))
                                 index++
                             }
                         }
@@ -137,7 +145,7 @@ fun Cube3DView(
 
                     tapSquares.sortBy { it.z }
                     for (sq in tapSquares) {
-                        if (sq.path.contains(offset)) {
+                        if (sq.bounds.contains(offset)) {
                             onSquareClick(sq.face, sq.index)
                             break
                         }
@@ -220,8 +228,15 @@ fun Cube3DView(
                         lineTo(o4.x, o4.y)
                         close()
                     }
+
+                    val minX = minOf(o1.x, o2.x, o3.x, o4.x)
+                    val maxX = maxOf(o1.x, o2.x, o3.x, o4.x)
+                    val minY = minOf(o1.y, o2.y, o3.y, o4.y)
+                    val maxY = maxOf(o1.y, o2.y, o3.y, o4.y)
+                    val bounds = Rect(minX, minY, maxX, maxY)
+
                     val color = colors.getOrNull(index)?.toComposeColor() ?: Color.Gray
-                    squares.add(FaceSquare(face, index, path, color, zAvgDraw))
+                    squares.add(FaceSquare(face, index, path, color, zAvgDraw, bounds))
                     index++
                 }
             }
