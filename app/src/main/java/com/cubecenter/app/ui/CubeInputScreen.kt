@@ -50,7 +50,6 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 .background(DarkSurface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            // İŞTE EKSİK OLAN PARAMETRE BURADA EKLENDİ
             Cube3DView(
                 faces = cubeState.faces,
                 onSquareClick = { face, index ->
