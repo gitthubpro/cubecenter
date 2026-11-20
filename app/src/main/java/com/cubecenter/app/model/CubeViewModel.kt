@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+// Güncelleme v2: GitHub'ın farkı görmesi için eklendi
 class CubeViewModel : ViewModel() {
     private val _cubeState = MutableStateFlow(RubikCube())
     val cubeState: StateFlow<RubikCube> = _cubeState.asStateFlow()
