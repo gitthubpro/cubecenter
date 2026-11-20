@@ -17,6 +17,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
+// Güncelleme v2: GitHub'ın farkı görmesi için eklendi
 data class FaceSquare(
     val face: Face,
     val index: Int,
