@@ -24,8 +24,7 @@ import com.cubecenter.app.ui.theme.*
 fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
     val cubeState by viewModel.cubeState.collectAsState()
     val selectedFace by viewModel.selectedFace.collectAsState()
-    
-    var selectedIndex by remember { mutableStateOf(0) }
+    val selectedColor by viewModel.selectedColor.collectAsState()
 
     Column(
         modifier = Modifier
@@ -54,7 +53,7 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                 faces = cubeState.faces,
                 onSquareClick = { face, index ->
                     viewModel.setFace(face)
-                    selectedIndex = index
+                    viewModel.setColor(face, index)
                 }
             )
         }
@@ -89,12 +88,8 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .background(color, RoundedCornerShape(8.dp))
-                                .border(
-                                    width = if (selectedIndex == index) 3.dp else 1.dp,
-                                    color = if (selectedIndex == index) Color.Yellow else Color.Black,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable { selectedIndex = index }
+                                .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                                .clickable { viewModel.setColor(selectedFace, index) }
                         )
                     }
                 }
@@ -120,8 +115,12 @@ fun CubeInputScreen(viewModel: CubeViewModel = viewModel<CubeViewModel>()) {
                         .size(40.dp)
                         .clip(CircleShape)
                         .background(cubeColor.toComposeColor())
-                        .clickable { viewModel.setColor(selectedIndex, cubeColor) }
-                        .border(1.dp, Color.Black, CircleShape)
+                        .clickable { viewModel.setSelectedColor(cubeColor) }
+                        .border(
+                            width = if (selectedColor == cubeColor) 3.dp else 1.dp,
+                            color = if (selectedColor == cubeColor) Color.White else Color.Black,
+                            shape = CircleShape
+                        )
                 )
             }
         }
