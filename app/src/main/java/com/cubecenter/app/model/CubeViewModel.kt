@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// Güncelleme v2: GitHub'ın farkı görmesi için eklendi
 class CubeViewModel : ViewModel() {
     private val _cubeState = MutableStateFlow(RubikCube())
     val cubeState: StateFlow<RubikCube> = _cubeState.asStateFlow()
@@ -13,12 +12,14 @@ class CubeViewModel : ViewModel() {
     private val _selectedFace = MutableStateFlow(Face.U)
     val selectedFace: StateFlow<Face> = _selectedFace.asStateFlow()
 
-    fun setColor(index: Int, color: CubeColor) {
+    private val _selectedColor = MutableStateFlow(CubeColor.WHITE)
+    val selectedColor: StateFlow<CubeColor> = _selectedColor.asStateFlow()
+
+    fun setColor(face: Face, index: Int) {
         val currentCube = _cubeState.value
-        val face = _selectedFace.value
         val currentColors = currentCube.faces[face]?.copyOf() ?: return
         
-        currentColors[index] = color
+        currentColors[index] = _selectedColor.value
         
         val newFaces = currentCube.faces.toMutableMap()
         newFaces[face] = currentColors
@@ -28,6 +29,10 @@ class CubeViewModel : ViewModel() {
 
     fun setFace(face: Face) {
         _selectedFace.value = face
+    }
+
+    fun setSelectedColor(color: CubeColor) {
+        _selectedColor.value = color
     }
 
     fun changeFace(direction: Int) {
