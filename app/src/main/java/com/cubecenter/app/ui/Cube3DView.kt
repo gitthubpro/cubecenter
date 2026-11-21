@@ -1,8 +1,8 @@
 package com.cubecenter.app.ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -35,21 +35,22 @@ fun Cube3DView(
 ) {
     var rotationX by remember { mutableStateOf(0.5f) }
     var rotationY by remember { mutableStateOf(-0.785f) }
+    var scale by remember { mutableStateOf(1f) }
 
     Canvas(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    rotationY -= dragAmount.x * 0.01f
-                    rotationX += dragAmount.y * 0.01f
+                detectTransformGestures { _, pan, zoom, _ ->
+                    scale *= zoom
+                    rotationY -= pan.x * 0.01f
+                    rotationX += pan.y * 0.01f
                 }
             }
             .pointerInput(faces) {
                 detectTapGestures { offset ->
                     val tapSquares = mutableListOf<FaceSquare>()
-                    val cubeSize = min(size.width, size.height) * 0.35f
+                    val cubeSize = min(size.width, size.height) * 0.35f * scale
                     val cx = size.width / 2
                     val cy = size.height / 2
 
@@ -153,7 +154,7 @@ fun Cube3DView(
                 }
             }
     ) {
-        val cubeSize = min(size.width, size.height) * 0.35f
+        val cubeSize = min(size.width, size.height) * 0.35f * scale
         val cx = size.width / 2
         val cy = size.height / 2
 
@@ -249,7 +250,7 @@ fun Cube3DView(
         addFaceForDraw(Face.D, 'x', 'z', 'y', -1f)
         addFaceForDraw(Face.L, 'y', 'z', 'x', -1f)
 
-        squares.sortByDescending { it.z }
+        squares.sortBy { it.z }
 
         for (sq in squares) {
             drawPath(sq.path, sq.color)
